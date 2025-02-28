@@ -486,144 +486,75 @@
             }, 500);
         });
 
-        // Fungsi untuk menyimpan komentar ke localStorage
-        function saveComments(comments) {
-            localStorage.setItem('comments', JSON.stringify(comments));
+        // Fungsi untuk menyimpan komentar ke MockAPI
+        function saveComment(comment) {
+            return $.ajax({
+                url: 'https://67c1315161d8935867e2238b.mockapi.io/comment',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(comment)
+            });
         }
 
-        // Fungsi untuk mendapatkan komentar dari localStorage
+        // Fungsi untuk mendapatkan komentar dari MockAPI
         function loadComments() {
-            const comments = localStorage.getItem('comments');
-            return comments ? JSON.parse(comments) : [];
+            return $.ajax({
+                url: 'https://67c1315161d8935867e2238b.mockapi.io/comment',
+                method: 'GET',
+                contentType: 'application/json'
+            });
+        }
+
+        // Fungsi untuk memformat waktu dari format ISO ke format yang lebih ramah pengguna
+        function formatTime(timestamp) {
+            const now = new Date();
+            const commentTime = new Date(timestamp);
+            const differenceInSeconds = Math.floor((now - commentTime) / 1000);
+            const differenceInMinutes = Math.floor(differenceInSeconds / 60);
+            const differenceInHours = Math.floor(differenceInMinutes / 60);
+            const differenceInDays = Math.floor(differenceInHours / 24);
+
+            if (differenceInSeconds < 60) {
+                return 'Baru saja';
+            } else if (differenceInMinutes < 60) {
+                return `${differenceInMinutes} menit yang lalu`;
+            } else if (differenceInHours < 24) {
+                return `${differenceInHours} jam yang lalu`;
+            } else if (differenceInDays < 2) {
+                return 'Kemarin';
+            } else {
+                const options = {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                };
+                return commentTime.toLocaleDateString('id-ID', options);
+            }
         }
 
         // Fungsi untuk menampilkan komentar di halaman
         function displayComments() {
-            const commentsContainer = document.getElementById('commentsContainer');
-            commentsContainer.innerHTML = ''; // Bersihkan container
+            loadComments().then(comments => {
+                const commentsContainer = document.getElementById('commentsContainer');
+                commentsContainer.innerHTML = ''; // Bersihkan container
 
-            const comments = loadComments();
-            comments.forEach(comment => {
-                const commentDiv = document.createElement('div');
-                commentDiv.className = 'bg-white p-4 rounded-lg shadow-md';
+                comments.forEach(comment => {
+                    const commentDiv = document.createElement('div');
+                    commentDiv.className = 'bg-white p-4 rounded-lg shadow-md';
 
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'flex items-center justify-between mb-2';
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'flex items-center justify-between mb-2';
 
-                const nameElement = document.createElement('p');
-                nameElement.className = 'font-semibold text-gray-800';
-                nameElement.textContent = comment.name;
+                    const nameElement = document.createElement('p');
+                    nameElement.className = 'font-semibold text-gray-800';
+                    nameElement.textContent = comment.name;
 
-                const timeElement = document.createElement('p');
-                timeElement.className = 'text-sm text-gray-500';
-                timeElement.textContent = comment.time;
+                    const timeElement = document.createElement('p');
+                    timeElement.className = 'text-sm text-gray-500';
+                    timeElement.textContent = formatTime(comment.time);
 
-                const messageElement = document.createElement('p');
-                messageElement.className = 'text-gray-700';
-                messageElement.textContent = comment.message;
-
-                headerDiv.appendChild(nameElement);
-                headerDiv.appendChild(timeElement);
-
-                commentDiv.appendChild(headerDiv);
-                commentDiv.appendChild(messageElement);
-
-                commentsContainer.appendChild(commentDiv);
-            });
-        }
-
-        // Fungsi untuk menghitung selisih waktu
-function formatTimeDifference(timestamp) {
-    const now = new Date();
-    const commentTime = new Date(timestamp);
-    const differenceInSeconds = Math.floor((now - commentTime) / 1000);
-
-    if (differenceInSeconds < 60) {
-        return 'Baru saja';
-    } else if (differenceInSeconds < 3600) {
-        const minutes = Math.floor(differenceInSeconds / 60);
-        return `${minutes} menit yang lalu`;
-    } else if (differenceInSeconds < 86400) {
-        const hours = Math.floor(differenceInSeconds / 3600);
-        return `${hours} jam yang lalu`;
-    } else {
-        // Jika lebih dari 1 hari, tampilkan tanggal dan jam
-        return commentTime.toLocaleString(); // Format tanggal dan jam lokal
-    }
-}
-
-// Event listener untuk form submit
-document.getElementById('rsvpForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    // Ambil nilai dari form
-    const name = document.getElementById('name').value;
-    const message = document.getElementById('message').value;
-    const time = new Date().toISOString(); // Simpan waktu saat ini dalam format ISO
-
-    // Buat objek komentar baru
-    const newComment = { name, message, time };
-
-    // Ambil komentar yang sudah ada dari localStorage
-    const comments = loadComments();
-
-    // Tambahkan komentar baru ke daftar komentar
-    comments.unshift(newComment);
-
-    // Simpan kembali ke localStorage
-    saveComments(comments);
-
-    // Tampilkan komentar terbaru
-    displayComments();
-
-    // Reset form
-    this.reset();
-
-    // Tampilkan pesan sukses
-    alert("Terima kasih! RSVP Anda telah diterima.");
-});
-
-// Fungsi untuk menampilkan komentar
-function displayComments() {
-    const comments = loadComments();
-    const commentsContainer = document.getElementById('commentsContainer');
-    commentsContainer.innerHTML = ''; // Kosongkan kontainer komentar
-
-    comments.forEach(comment => {
-        const commentElement = document.createElement('div');
-        commentElement.classList.add('comment');
-
-        const nameElement = document.createElement('strong');
-        nameElement.textContent = comment.name;
-
-        const messageElement = document.createElement('p');
-        messageElement.textContent = comment.message;
-
-        const timeElement = document.createElement('small');
-        timeElement.textContent = formatTimeDifference(comment.time); // Format waktu
-
-        commentElement.appendChild(nameElement);
-        commentElement.appendChild(messageElement);
-        commentElement.appendChild(timeElement);
-
-        commentsContainer.appendChild(commentElement);
-    });
-}
-
-// Fungsi untuk memuat komentar dari localStorage
-function loadComments() {
-    const commentsJSON = localStorage.getItem('comments');
-    return commentsJSON ? JSON.parse(commentsJSON) : [];
-}
-
-// Fungsi untuk menyimpan komentar ke localStorage
-function saveComments(comments) {
-    localStorage.setItem('comments', JSON.stringify(comments));
-}
-
-// Tampilkan komentar saat halaman dimuat
-displayComments();
-
+                    const messageElement = document.createElement('p');
+          
         // Audio control
         let audioPlaying = false;
         const bgMusic = document.getElementById("bgMusic");
