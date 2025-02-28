@@ -489,7 +489,7 @@
         // Fungsi untuk menyimpan komentar ke MockAPI
         function saveComment(comment) {
             return $.ajax({
-                url: 'https://67c1315161d8935867e2238b.mockapi.io/comment',
+                url: 'https://mockapi.io/clone/67c1315161d8935867e2238c',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(comment)
@@ -499,7 +499,7 @@
         // Fungsi untuk mendapatkan komentar dari MockAPI
         function loadComments() {
             return $.ajax({
-                url: 'https://67c1315161d8935867e2238b.mockapi.io/comment',
+                url: 'https://mockapi.io/clone/67c1315161d8935867e2238c',
                 method: 'GET',
                 contentType: 'application/json'
             });
